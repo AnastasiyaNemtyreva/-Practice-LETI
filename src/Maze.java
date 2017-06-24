@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -57,6 +59,23 @@ public class Maze {
         canvas.set_height(height);
     }
     
+    void clear(){
+        stack.clear();
+        dont_edit=false;
+        maze_wall = new int[width][height];
+        canvas.paint_canvas();
+    }
+     
+    void go_maze(){
+        try {
+            dont_edit=true;
+            maze_wall[width-1][height-1]=2;
+            Find_way_out(width-1, height-1);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(NewJFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     boolean check_left(int x , int y){
         if (x<1) return false;
         if (maze_wall[x-1][y]==0) return true;
@@ -65,7 +84,7 @@ public class Maze {
     
         
     boolean check_right(int x , int y){
-        if (x >=width-2) return false;
+        if (x >width-2) return false;
         if (maze_wall[x+1][y]==0) return true;
         else return false;
     } 
@@ -78,45 +97,55 @@ public class Maze {
     } 
         
     boolean check_down(int x , int y){
-        if (y>=height-2) return false;
+        if (y>height-2) return false;
         if (maze_wall[x][y+1]==0) return true;
         else return false;
     } 
      
      
     void Find_way_out(int x, int y) throws InterruptedException{
+        if(x==0 && y==0) return;
         Thread.sleep(100);
-        dont_edit=true;
-        /*Integer[] arr;
+        Integer[] arr;
         arr = new Integer[2];
         arr[0]=x;
         arr[1]=y;
-        stack.push(arr);*/
+        stack.push(arr);
         
         if (check_up(x,y)){
+            maze_wall[x][y-1]=2;
             canvas.draw_rect(x,y-1,Color.BLACK,Color.GREEN);
             Find_way_out(x,y-1);
             return;
         } 
         
         if (check_left(x,y)){
+            maze_wall[x-1][y]=2;
             canvas.draw_rect(x-1,y,Color.BLACK,Color.GREEN);
             Find_way_out(x-1,y);
             return;
         }
         
         if (check_down(x,y)){
+            maze_wall[x][y+1]=2;
             canvas.draw_rect(x,y+1,Color.BLACK,Color.GREEN);
             Find_way_out(x,y+1);
             return;
         }
         
         if (check_right(x,y)){
+            maze_wall[x+1][y]=2;
             canvas.draw_rect(x+1,y,Color.BLACK,Color.GREEN);
             Find_way_out(x+1,y);
             return;
         } 
-
+        
+        canvas.draw_rect(x,y,Color.BLACK,Color.RED);
+        if (stack.size()>1){
+            arr = stack.pop();
+            arr = stack.pop();
+            Find_way_out(arr[0],arr[1]);
+        }
      }
 
      
